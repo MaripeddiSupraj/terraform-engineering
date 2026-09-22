@@ -11,6 +11,7 @@ on:
     paths:
       - "**/*.tf"
       - "**/*.tftest.hcl"
+      - ".github/workflows/terraform-quality.yml"
 
 permissions:
   contents: read
