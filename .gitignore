@@ -1,0 +1,35 @@
+# Terraform working data
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.plan
+crash.log
+crash.*.log
+
+# Variable files can contain environment data or secrets
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+
+# Terraform CLI configuration
+.terraformrc
+terraform.rc
+
+# Evidence and generated reports
+.evidence/
+**/.evidence/
+reports/
+
+# Cloud credentials / local settings
+.env
+.env.*
+!.env.example
+*.pem
+*.pfx
+*.key
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/

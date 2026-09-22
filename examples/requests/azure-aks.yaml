@@ -1,0 +1,30 @@
+project: payments-platform
+provider: azure
+environment: prod
+region: centralindia
+blueprint: kubernetes-platform
+
+requirements:
+  kubernetes:
+    private_cluster: true
+    workload_identity: true
+    autoscaling:
+      min_nodes: 3
+      max_nodes: 6
+  monitoring:
+    enabled: true
+
+network:
+  address_space:
+    - 10.20.0.0/16
+  subnets:
+    aks:
+      - 10.20.0.0/20
+
+security:
+  long_lived_credentials_allowed: false
+  public_control_plane_allowed: false
+
+tags:
+  owner: platform-engineering
+  managed-by: terraform

@@ -1,0 +1,1 @@
+Read `/AGENTS.md` and follow it as the authoritative repository contract. Prefer composing existing provider-native modules. Never add credentials, bypass the saved-plan approval boundary, or use `terraform apply -auto-approve`.

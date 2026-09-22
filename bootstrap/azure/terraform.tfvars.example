@@ -1,0 +1,11 @@
+resource_group_name          = "rg-tfstate-platform-ci"
+location                     = "centralindia"
+storage_account_name         = "sttfstateCHANGE001"
+container_name               = "tfstate"
+public_network_access_enabled = true
+
+tags = {
+  managed-by  = "terraform"
+  purpose     = "terraform-state"
+  environment = "shared"
+}

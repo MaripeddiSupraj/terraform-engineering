@@ -1,0 +1,60 @@
+name: Terraform Quality
+
+on:
+  pull_request:
+    paths:
+      - "**/*.tf"
+      - "**/*.tftest.hcl"
+      - ".github/workflows/terraform-quality.yml"
+  push:
+    branches: [main]
+    paths:
+      - "**/*.tf"
+      - "**/*.tftest.hcl"
+
+permissions:
+  contents: read
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v4.0.1
+        with:
+          terraform_version: 1.16.3
+          terraform_wrapper: false
+
+      - name: Format check
+        run: terraform fmt -check -recursive .
+
+      - name: Validate and test
+        run: make validate test
+
+  tflint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v6.2.2
+        with:
+          cache: true
+
+      - name: Initialize TFLint
+        run: tflint --init
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Lint Terraform
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' dir; do
+            echo "==> tflint ${dir}"
+            tflint --chdir="${dir}"
+          done < <(find modules bootstrap blueprints -type f -name '*.tf' -print0 | xargs -0 -n1 dirname | sort -zu)

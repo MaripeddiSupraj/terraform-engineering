@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/infrastructure-request.schema.json",
+  "title": "Infrastructure Request",
+  "type": "object",
+  "required": ["project", "provider", "environment", "region", "blueprint"],
+  "properties": {
+    "project": {"type": "string", "minLength": 2},
+    "provider": {"type": "string", "enum": ["azure", "aws", "gcp", "oci"]},
+    "environment": {"type": "string", "enum": ["dev", "test", "stage", "prod"]},
+    "region": {"type": "string", "minLength": 2},
+    "blueprint": {"type": "string", "minLength": 2},
+    "requirements": {"type": "object", "additionalProperties": true},
+    "network": {"type": "object", "additionalProperties": true},
+    "security": {"type": "object", "additionalProperties": true},
+    "tags": {
+      "type": "object",
+      "additionalProperties": {"type": "string"}
+    }
+  },
+  "additionalProperties": false
+}

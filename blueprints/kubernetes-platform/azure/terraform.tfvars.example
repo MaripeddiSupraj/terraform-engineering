@@ -1,0 +1,31 @@
+project        = "payments"
+environment    = "prod"
+location       = "centralindia"
+location_short = "ci"
+
+address_space = ["10.20.0.0/16"]
+aks_subnet_prefixes = ["10.20.0.0/20"]
+
+# Resolve a currently supported AKS version for the target Azure region.
+# kubernetes_version = "<supported-version>"
+
+private_cluster_enabled = true
+
+# Use Microsoft Entra group object IDs, never individual user credentials.
+aks_admin_group_object_ids = [
+  "00000000-0000-0000-0000-000000000000"
+]
+
+system_node_pool = {
+  name            = "system"
+  vm_size         = "Standard_D4ds_v5"
+  node_count      = 3
+  min_count       = 3
+  max_count       = 6
+  os_disk_size_gb = 128
+}
+
+tags = {
+  owner       = "platform-engineering"
+  cost-center = "replace-me"
+}
