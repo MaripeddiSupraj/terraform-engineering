@@ -30,7 +30,7 @@ jobs:
           terraform_wrapper: false
 
       - name: Format check
-        run: terraform fmt -check -recursive .
+        run: terraform fmt -check -diff -recursive .
 
       - name: Validate and test
         run: make validate test
