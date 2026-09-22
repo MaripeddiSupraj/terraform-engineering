@@ -57,6 +57,29 @@ variable "public_network_access_enabled" {
   default     = false
 }
 
+variable "network_bypass" {
+  description = "Traffic allowed to bypass Key Vault network ACLs."
+  type        = string
+  default     = "AzureServices"
+
+  validation {
+    condition     = contains(["AzureServices", "None"], var.network_bypass)
+    error_message = "network_bypass must be AzureServices or None."
+  }
+}
+
+variable "allowed_ip_rules" {
+  description = "Public IPv4 addresses or CIDR ranges explicitly allowed by the Key Vault firewall when public network access is enabled."
+  type        = list(string)
+  default     = []
+}
+
+variable "allowed_subnet_ids" {
+  description = "Virtual network subnet resource IDs explicitly allowed by the Key Vault firewall."
+  type        = list(string)
+  default     = []
+}
+
 variable "tags" {
   description = "Tags applied to the vault."
   type        = map(string)

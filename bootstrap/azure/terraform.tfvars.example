@@ -1,8 +1,12 @@
-resource_group_name          = "rg-tfstate-platform-ci"
-location                     = "centralindia"
-storage_account_name         = "sttfstateCHANGE001"
-container_name               = "tfstate"
+resource_group_name           = "rg-tfstate-platform-ci"
+location                      = "centralindia"
+storage_account_name          = "sttfstateCHANGE001"
+container_name                = "tfstate"
 public_network_access_enabled = true
+
+# Add only the egress IP/CIDR of the trusted bootstrap runner when public
+# network access is required. Prefer private connectivity for steady state.
+allowed_ip_rules = []
 
 tags = {
   managed-by  = "terraform"

@@ -8,5 +8,13 @@ resource "azurerm_key_vault" "this" {
   purge_protection_enabled      = var.purge_protection_enabled
   soft_delete_retention_days    = var.soft_delete_retention_days
   public_network_access_enabled = var.public_network_access_enabled
-  tags                          = var.tags
+
+  network_acls {
+    bypass                     = var.network_bypass
+    default_action             = "Deny"
+    ip_rules                   = var.allowed_ip_rules
+    virtual_network_subnet_ids = var.allowed_subnet_ids
+  }
+
+  tags = var.tags
 }

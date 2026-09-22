@@ -30,6 +30,12 @@ variable "public_network_access_enabled" {
   default     = true
 }
 
+variable "allowed_ip_rules" {
+  description = "Public IPv4 addresses or CIDR ranges allowed through the state storage firewall when public network access is enabled. Keep this list as narrow as possible."
+  type        = list(string)
+  default     = []
+}
+
 variable "tags" {
   description = "Tags applied to state infrastructure."
   type        = map(string)

@@ -6,12 +6,12 @@ resource "azurerm_kubernetes_cluster" "this" {
   kubernetes_version  = var.kubernetes_version
   sku_tier            = var.sku_tier
 
-  private_cluster_enabled         = var.private_cluster_enabled
+  private_cluster_enabled           = var.private_cluster_enabled
   role_based_access_control_enabled = true
-  local_account_disabled          = true
-  oidc_issuer_enabled             = true
-  workload_identity_enabled       = true
-  azure_policy_enabled            = true
+  local_account_disabled            = true
+  oidc_issuer_enabled               = true
+  workload_identity_enabled         = true
+  azure_policy_enabled              = true
 
   default_node_pool {
     name                 = var.system_node_pool.name
@@ -30,8 +30,8 @@ resource "azurerm_kubernetes_cluster" "this" {
   }
 
   azure_active_directory_role_based_access_control {
-    azure_rbac_enabled       = true
-    admin_group_object_ids   = var.admin_group_object_ids
+    azure_rbac_enabled     = true
+    admin_group_object_ids = var.admin_group_object_ids
   }
 
   network_profile {
