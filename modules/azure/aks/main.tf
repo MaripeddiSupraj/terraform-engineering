@@ -25,6 +25,12 @@ resource "azurerm_kubernetes_cluster" "this" {
     type                 = "VirtualMachineScaleSets"
   }
 
+  # AzureRM 5.x requires this block. Manual mode keeps node-pool lifecycle
+  # explicit in Terraform instead of enabling AKS node auto-provisioning.
+  node_provisioning_profile {
+    mode = "Manual"
+  }
+
   identity {
     type = "SystemAssigned"
   }
