@@ -54,7 +54,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          while IFS= read -r -d '' dir; do
+          while IFS= read -r dir; do
             echo "==> tflint ${dir}"
             tflint --chdir="${dir}"
-          done < <(find modules bootstrap blueprints -type f -name '*.tf' -print0 | xargs -0 -n1 dirname | sort -zu)
+          done < <(find modules bootstrap blueprints -type f -name '*.tf' -printf '%h\n' | sort -u)
