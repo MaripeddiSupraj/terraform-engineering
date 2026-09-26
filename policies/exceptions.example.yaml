@@ -1,0 +1,17 @@
+# Copy to .terraform-policy-exceptions.yaml in the Terraform root directory (or
+# the repository root) to record reviewed exceptions. Every entry is a full
+# resource address from the plan. Changes to this file deserve the same review
+# as the infrastructure change they unlock.
+exceptions:
+  # Stateful/foundational resources that may be destroyed or replaced.
+  allow_destroy: []
+  # Resources allowed to have public network exposure.
+  allow_public: []
+  # Role assignments / IAM grants allowed to use privileged roles.
+  allow_privileged_rbac: []
+
+policy:
+  # Tags every taggable resource must carry.
+  required_tags:
+    - environment
+    - managed-by

@@ -1,22 +1,156 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.invalid/schemas/infrastructure-request.schema.json",
+  "$id": "https://github.com/MaripeddiSupraj/terraform-engineering/schemas/infrastructure-request.schema.json",
   "title": "Infrastructure Request",
+  "description": "Machine-readable infrastructure intent. Agents normalize a human request into this shape before designing Terraform. Implemented blueprints get a strict schema; others accept free-form requirements until implemented.",
   "type": "object",
   "required": ["project", "provider", "environment", "region", "blueprint"],
   "properties": {
-    "project": {"type": "string", "minLength": 2},
-    "provider": {"type": "string", "enum": ["azure", "aws", "gcp", "oci"]},
-    "environment": {"type": "string", "enum": ["dev", "test", "stage", "prod"]},
-    "region": {"type": "string", "minLength": 2},
-    "blueprint": {"type": "string", "minLength": 2},
-    "requirements": {"type": "object", "additionalProperties": true},
-    "network": {"type": "object", "additionalProperties": true},
-    "security": {"type": "object", "additionalProperties": true},
+    "project": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]{2,18}$",
+      "description": "Short project identifier used in names and tags."
+    },
+    "provider": { "type": "string", "enum": ["azure", "aws", "gcp", "oci"] },
+    "environment": { "type": "string", "enum": ["dev", "test", "stage", "prod"] },
+    "region": { "type": "string", "minLength": 2 },
+    "region_short": {
+      "type": "string",
+      "pattern": "^[a-z0-9]{2,6}$",
+      "description": "Short region token for resource names. Optional for regions the renderer knows."
+    },
+    "blueprint": { "type": "string", "minLength": 2 },
+    "requirements": { "type": "object" },
+    "network": { "type": "object" },
+    "security": { "type": "object" },
     "tags": {
       "type": "object",
-      "additionalProperties": {"type": "string"}
+      "propertyNames": { "pattern": "^[A-Za-z0-9_.:/-]{1,128}$" },
+      "additionalProperties": { "type": "string" }
     }
   },
-  "additionalProperties": false
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "provider": { "const": "azure" },
+          "blueprint": { "const": "kubernetes-platform" }
+        },
+        "required": ["provider", "blueprint"]
+      },
+      "then": { "$ref": "#/$defs/azureKubernetesPlatform" }
+    }
+  ],
+  "$defs": {
+    "cidr": {
+      "type": "string",
+      "pattern": "^([0-9]{1,3}\\.){3}[0-9]{1,3}/([0-9]|[12][0-9]|3[0-2])$"
+    },
+    "guid": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    },
+    "nodePool": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "vm_size": { "type": "string", "pattern": "^Standard_[A-Za-z0-9_]+$" },
+        "min_nodes": { "type": "integer", "minimum": 0, "maximum": 1000 },
+        "max_nodes": { "type": "integer", "minimum": 1, "maximum": 1000 },
+        "node_count": { "type": "integer", "minimum": 0, "maximum": 1000 },
+        "spot": { "type": "boolean" },
+        "labels": { "type": "object", "additionalProperties": { "type": "string" } },
+        "taints": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "azureKubernetesPlatform": {
+      "required": ["network", "security", "tags"],
+      "properties": {
+        "requirements": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kubernetes": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+(\\.[0-9]+)?$" },
+                "private_cluster": { "type": "boolean" },
+                "api_server_authorized_ip_ranges": { "type": "array", "items": { "$ref": "#/$defs/cidr" } },
+                "workload_identity": { "const": true, "description": "Always enabled by the blueprint." },
+                "availability_zones": {
+                  "type": "array",
+                  "items": { "enum": ["1", "2", "3"] },
+                  "uniqueItems": true
+                },
+                "autoscaling": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "description": "Shorthand for the system pool's min/max nodes.",
+                  "properties": {
+                    "min_nodes": { "type": "integer", "minimum": 1 },
+                    "max_nodes": { "type": "integer", "minimum": 1 }
+                  }
+                },
+                "system_pool": { "$ref": "#/$defs/nodePool" },
+                "user_pools": {
+                  "type": "object",
+                  "propertyNames": { "pattern": "^[a-z][a-z0-9]{0,11}$" },
+                  "additionalProperties": { "$ref": "#/$defs/nodePool" }
+                },
+                "maintenance_window": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "day_of_week": { "enum": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] },
+                    "start_time": { "type": "string", "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$" },
+                    "utc_offset": { "type": "string", "pattern": "^[+-][0-9]{2}:[0-9]{2}$" },
+                    "duration_hours": { "type": "integer", "minimum": 4, "maximum": 24 }
+                  }
+                }
+              }
+            },
+            "monitoring": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": { "const": true, "description": "Log Analytics is always created by the blueprint." },
+                "retention_days": { "type": "integer", "minimum": 30, "maximum": 730 }
+              }
+            }
+          }
+        },
+        "network": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["address_space", "subnets"],
+          "properties": {
+            "address_space": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/cidr" } },
+            "subnets": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["aks"],
+              "properties": {
+                "aks": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/cidr" } }
+              }
+            }
+          }
+        },
+        "security": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["aks_admin_group_object_ids"],
+          "properties": {
+            "aks_admin_group_object_ids": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/guid" } },
+            "long_lived_credentials_allowed": { "const": false },
+            "public_control_plane_allowed": { "type": "boolean" }
+          }
+        },
+        "tags": {
+          "required": ["owner"]
+        }
+      }
+    }
+  }
 }

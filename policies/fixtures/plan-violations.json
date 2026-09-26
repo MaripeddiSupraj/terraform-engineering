@@ -1,0 +1,132 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.16.3",
+  "resource_changes": [
+    {
+      "address": "azurerm_storage_account.state",
+      "mode": "managed",
+      "type": "azurerm_storage_account",
+      "name": "state",
+      "provider_name": "registry.terraform.io/hashicorp/azurerm",
+      "change": {
+        "actions": [
+          "delete",
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "name": "sttfstate",
+          "public_network_access_enabled": true,
+          "allow_nested_items_to_be_public": true,
+          "tags": {
+            "environment": "prod"
+          }
+        },
+        "after_unknown": {
+          "id": true
+        }
+      }
+    },
+    {
+      "address": "azurerm_kubernetes_cluster.this",
+      "mode": "managed",
+      "type": "azurerm_kubernetes_cluster",
+      "name": "this",
+      "provider_name": "registry.terraform.io/hashicorp/azurerm",
+      "change": {
+        "actions": [
+          "update"
+        ],
+        "before": null,
+        "after": {
+          "name": "aks",
+          "private_cluster_enabled": false,
+          "api_server_access_profile": [],
+          "tags": {
+            "environment": "prod",
+            "managed-by": "terraform",
+            "project": "payments",
+            "owner": "platform-engineering"
+          }
+        },
+        "after_unknown": {
+          "id": true
+        }
+      }
+    },
+    {
+      "address": "azurerm_network_security_group.web",
+      "mode": "managed",
+      "type": "azurerm_network_security_group",
+      "name": "web",
+      "provider_name": "registry.terraform.io/hashicorp/azurerm",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "name": "nsg-web",
+          "security_rule": [
+            {
+              "name": "ssh",
+              "direction": "Inbound",
+              "access": "Allow",
+              "source_address_prefix": "*",
+              "source_address_prefixes": []
+            }
+          ],
+          "tags": {
+            "environment": "prod",
+            "managed-by": "terraform",
+            "project": "payments",
+            "owner": "platform-engineering"
+          }
+        },
+        "after_unknown": {
+          "id": true
+        }
+      }
+    },
+    {
+      "address": "azurerm_role_assignment.ci",
+      "mode": "managed",
+      "type": "azurerm_role_assignment",
+      "name": "ci",
+      "provider_name": "registry.terraform.io/hashicorp/azurerm",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "role_definition_name": "Owner",
+          "scope": "/subscriptions/00000000-0000-0000-0000-000000000000"
+        },
+        "after_unknown": {
+          "id": true
+        }
+      }
+    },
+    {
+      "address": "azurerm_resource_group.untagged",
+      "mode": "managed",
+      "type": "azurerm_resource_group",
+      "name": "untagged",
+      "provider_name": "registry.terraform.io/hashicorp/azurerm",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "name": "rg-x",
+          "tags": null
+        },
+        "after_unknown": {
+          "id": true
+        }
+      }
+    }
+  ]
+}

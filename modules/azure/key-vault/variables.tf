@@ -3,8 +3,8 @@ variable "name" {
   type        = string
 
   validation {
-    condition     = length(var.name) >= 3 && length(var.name) <= 24
-    error_message = "Key Vault names must contain between 3 and 24 characters."
+    condition     = can(regex("^[a-zA-Z][a-zA-Z0-9-]{1,22}[a-zA-Z0-9]$", var.name)) && !strcontains(var.name, "--")
+    error_message = "Key Vault names must be 3-24 alphanumeric/hyphen characters, start with a letter, end with a letter or digit, and not contain consecutive hyphens."
   }
 }
 
@@ -21,6 +21,11 @@ variable "location" {
 variable "tenant_id" {
   description = "Microsoft Entra tenant ID used by the vault."
   type        = string
+
+  validation {
+    condition     = can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", var.tenant_id))
+    error_message = "tenant_id must be a GUID."
+  }
 }
 
 variable "sku_name" {

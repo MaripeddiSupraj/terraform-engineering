@@ -1,0 +1,8 @@
+---
+description: Terraform engineering operating contract
+alwaysApply: true
+---
+
+Read and obey `AGENTS.md`. Use the procedures in `skills/*/SKILL.md`.
+`.cursor/hooks.json` runs `scripts/guard-terraform.py` before shell commands;
+when it blocks a command, follow the printed reason instead of retrying a variant.

@@ -12,3 +12,8 @@ output "location" {
   description = "Resource group Azure region."
   value       = azurerm_resource_group.this.location
 }
+
+output "tags" {
+  description = "Tags applied to the resource group, for callers that verify tag propagation."
+  value       = azurerm_resource_group.this.tags
+}

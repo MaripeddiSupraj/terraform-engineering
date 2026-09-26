@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeShellExecution": [
+      {
+        "command": "python3 ./scripts/guard-terraform.py",
+        "timeout": 10,
+        "matcher": "terraform|tofu|terragrunt|az |aws |gcloud |oci "
+      }
+    ]
+  }
+}

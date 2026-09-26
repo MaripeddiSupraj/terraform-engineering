@@ -44,15 +44,19 @@ module "monitoring" {
 module "aks" {
   source = "../../../modules/azure/aks"
 
-  name                       = "aks-${local.base_name}"
-  resource_group_name        = module.resource_group.name
-  location                   = module.resource_group.location
-  dns_prefix                 = "aks-${local.base_name}"
-  kubernetes_version         = var.kubernetes_version
-  subnet_id                  = module.network.subnet_ids["aks"]
-  private_cluster_enabled    = var.private_cluster_enabled
-  admin_group_object_ids     = var.aks_admin_group_object_ids
-  system_node_pool           = var.system_node_pool
-  log_analytics_workspace_id = module.monitoring.id
-  tags                       = local.common_tags
+  name                            = "aks-${local.base_name}"
+  resource_group_name             = module.resource_group.name
+  location                        = module.resource_group.location
+  dns_prefix                      = "aks-${local.base_name}"
+  kubernetes_version              = var.kubernetes_version
+  subnet_id                       = module.network.subnet_ids["aks"]
+  private_cluster_enabled         = var.private_cluster_enabled
+  api_server_authorized_ip_ranges = var.api_server_authorized_ip_ranges
+  admin_group_object_ids          = var.aks_admin_group_object_ids
+  availability_zones              = var.availability_zones
+  system_node_pool                = var.system_node_pool
+  user_node_pools                 = var.user_node_pools
+  maintenance_window              = var.maintenance_window
+  log_analytics_workspace_id      = module.monitoring.id
+  tags                            = local.common_tags
 }

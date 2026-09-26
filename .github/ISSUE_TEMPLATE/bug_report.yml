@@ -1,0 +1,36 @@
+name: Bug report
+description: Something in a module, blueprint, policy, guard, or skill behaves incorrectly.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: "Never paste state files, plan files, credentials, subscription IDs, or private endpoints. See SECURITY.md."
+  - type: input
+    id: component
+    attributes:
+      label: Component
+      placeholder: modules/azure/aks, policies/terraform/exposure.rego, scripts/guard-terraform.py, skills/plan-terraform …
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened and what you expected
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: Redacted HCL / request YAML / command.
+      render: hcl
+  - type: input
+    id: versions
+    attributes:
+      label: Terraform and provider versions
+      placeholder: Terraform 1.16.3, azurerm 5.4.0
+  - type: input
+    id: agent
+    attributes:
+      label: Agent (if relevant)
+      placeholder: Claude Code / Codex / Cursor / Copilot / Gemini CLI / none

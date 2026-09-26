@@ -1,0 +1,18 @@
+# Intentionally invalid: public control plane without authorization or ranges.
+# CI asserts this request is rejected.
+project: payments
+provider: azure
+environment: prod
+region: centralindia
+blueprint: kubernetes-platform
+requirements:
+  kubernetes:
+    private_cluster: false
+network:
+  address_space: [10.20.0.0/16]
+  subnets:
+    aks: [10.20.0.0/22]
+security:
+  aks_admin_group_object_ids: [00000000-0000-0000-0000-000000000000]
+tags:
+  owner: platform-engineering

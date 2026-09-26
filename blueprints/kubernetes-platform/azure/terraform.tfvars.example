@@ -4,9 +4,12 @@ location       = "centralindia"
 location_short = "ci"
 
 address_space = ["10.20.0.0/16"]
-aks_subnet_prefixes = ["10.20.0.0/20"]
+# Azure CNI Overlay: pods get IPs from an overlay range, so the node subnet only
+# needs one IP per node (plus surge headroom during upgrades).
+aks_subnet_prefixes = ["10.20.0.0/22"]
 
-# Resolve a currently supported AKS version for the target Azure region.
+# Resolve a currently supported AKS version for the target Azure region:
+#   az aks get-versions --location centralindia --output table
 # kubernetes_version = "<supported-version>"
 
 private_cluster_enabled = true
@@ -17,12 +20,24 @@ aks_admin_group_object_ids = [
 ]
 
 system_node_pool = {
-  name            = "system"
-  vm_size         = "Standard_D4ds_v5"
-  node_count      = 3
-  min_count       = 3
-  max_count       = 6
-  os_disk_size_gb = 128
+  vm_size    = "Standard_D4ds_v5"
+  node_count = 3
+  min_count  = 3
+  max_count  = 6
+}
+
+user_node_pools = {
+  apps = {
+    vm_size   = "Standard_D4ds_v5"
+    min_count = 2
+    max_count = 10
+  }
+}
+
+maintenance_window = {
+  day_of_week = "Sunday"
+  start_time  = "02:00"
+  utc_offset  = "+05:30"
 }
 
 tags = {

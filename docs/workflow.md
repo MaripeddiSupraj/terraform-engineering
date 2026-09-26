@@ -1,29 +1,49 @@
 # Agentic Terraform Workflow
 
-## Phase 1 — Understand
+Each phase maps to a skill in `skills/`. Enforcement points are marked **(enforced)**.
 
-Normalize provider, environment, region, capability, compliance/security constraints, availability requirements, and expected scale. Do not infer production-sensitive defaults silently.
+## Phase 1: Understand (`design-infrastructure`)
 
-## Phase 2 — Design
+Normalize provider, environment, region, capability, security constraints,
+availability and scale into the request contract
+(`schemas/infrastructure-request.schema.json`). **(enforced)** The schema and
+`scripts/request-to-tfvars.py` reject incomplete or contradictory requests,
+such as a public control plane that isn't explicitly allowed and restricted.
 
-Select an existing blueprint if possible. Identify approved modules and provider-native dependencies. Call out any new module required before writing it.
+## Phase 2: Design
 
-## Phase 3 — Implement
+Select an existing blueprint, identify approved modules, and call out any new
+module before writing it. Surface decisions that change cost, security or
+topology. The human approves the design.
 
-Make the smallest composable change. Keep naming, tags, and security defaults consistent.
+## Phase 3: Implement (`author-module` when needed)
 
-## Phase 4 — Prove quality
+Make the smallest composable change. **(enforced)** Module validations and
+preconditions reject insecure inputs at plan time.
 
-Run the checks that are available and report exact results. A model statement such as "this should work" is not evidence.
+## Phase 4: Prove quality (`validate-terraform`)
 
-## Phase 5 — Plan
+fmt, validate, native tests, TFLint, Trivy. Report exact results; "this should
+work" is not evidence. **(enforced)** in CI on every pull request.
 
-Create a saved Terraform plan. Summarize add/change/destroy counts, replacements, public exposure changes, IAM/RBAC changes, database/storage destruction risk, and known cost-impacting resources.
+## Phase 5: Plan (`plan-terraform`)
 
-## Phase 6 — Approve
+`scripts/capture-plan.sh` creates a saved plan, plan JSON, a blast-radius
+summary and the policy result. **(enforced)** The OPA policy gate denies
+protected destroys, public exposure, missing tags and privileged IAM.
 
-Human approval applies to the exact reviewed saved plan. A changed configuration requires a new plan.
+## Phase 6: Approve
 
-## Phase 7 — Apply and verify
+A human approves the exact saved plan. A changed configuration requires a new
+plan. **(enforced)** The guard hook blocks `-auto-approve`, `apply` without a
+plan file, and `destroy`. Claude Code also asks before any `terraform apply`.
 
-Apply the saved plan, verify expected resources/endpoints/health, and capture evidence in a non-Git location.
+## Phase 7: Apply and verify (`apply-terraform`)
+
+Apply the saved plan, verify outputs and health, confirm no remaining diff
+(`plan -detailed-exitcode`), and keep evidence outside Git.
+
+## Operating existing infrastructure
+
+- Adopt resources with `import` blocks (`import-resources`), never `terraform import`.
+- Investigate drift with refresh-only plans (`detect-drift`), never with cloud CLI changes.

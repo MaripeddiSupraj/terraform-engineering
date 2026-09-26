@@ -1,4 +1,11 @@
-project: payments-platform
+# Normalized form of: "Create a production Azure Kubernetes platform in Central
+# India with private networking, three system nodes autoscaling to six,
+# workload identity, Azure Monitor, and no credentials in Terraform."
+#
+#   python3 scripts/request-to-tfvars.py --check examples/requests/azure-aks.yaml
+#   python3 scripts/request-to-tfvars.py examples/requests/azure-aks.yaml \
+#     -o blueprints/kubernetes-platform/azure/terraform.tfvars.json
+project: payments
 provider: azure
 environment: prod
 region: centralindia
@@ -8,23 +15,38 @@ requirements:
   kubernetes:
     private_cluster: true
     workload_identity: true
-    autoscaling:
+    availability_zones: ["1", "2", "3"]
+    system_pool:
+      vm_size: Standard_D4ds_v5
+      node_count: 3
       min_nodes: 3
       max_nodes: 6
+    user_pools:
+      apps:
+        vm_size: Standard_D8ds_v5
+        min_nodes: 2
+        max_nodes: 10
+    maintenance_window:
+      day_of_week: Sunday
+      start_time: "02:00"
+      utc_offset: "+05:30"
   monitoring:
     enabled: true
+    retention_days: 30
 
 network:
   address_space:
     - 10.20.0.0/16
   subnets:
     aks:
-      - 10.20.0.0/20
+      - 10.20.0.0/22
 
 security:
+  aks_admin_group_object_ids:
+    - 00000000-0000-0000-0000-000000000000 # replace with your Entra group
   long_lived_credentials_allowed: false
   public_control_plane_allowed: false
 
 tags:
   owner: platform-engineering
-  managed-by: terraform
+  cost-center: replace-me

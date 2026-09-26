@@ -1,0 +1,9 @@
+# Reviewed exceptions for the state bootstrap. The state account starts with
+# public network access (firewall default-deny + explicit runner IPs) because
+# private CI connectivity usually does not exist yet. Remove this exception
+# once public_network_access_enabled is set to false.
+exceptions:
+  allow_destroy: []
+  allow_public:
+    - azurerm_storage_account.state
+  allow_privileged_rbac: []

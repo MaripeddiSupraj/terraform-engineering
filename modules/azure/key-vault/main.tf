@@ -17,4 +17,11 @@ resource "azurerm_key_vault" "this" {
   }
 
   tags = var.tags
+
+  lifecycle {
+    # With purge protection, a destroyed vault name stays reserved for the
+    # soft-delete period and its keys/secrets are unusable. Destroying a vault
+    # is almost always a mistake; retire it in a deliberate module change.
+    prevent_destroy = true
+  }
 }

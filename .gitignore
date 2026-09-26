@@ -33,3 +33,4 @@ reports/
 .DS_Store
 .idea/
 .vscode/
+__pycache__/

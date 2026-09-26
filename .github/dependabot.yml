@@ -4,3 +4,23 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      actions:
+        patterns: ["*"]
+
+  # Provider bumps arrive as reviewable PRs; CI runs validate + tests against them.
+  - package-ecosystem: "terraform"
+    directories:
+      - "/modules/azure/*"
+      - "/bootstrap/azure"
+      - "/blueprints/kubernetes-platform/azure"
+    schedule:
+      interval: "weekly"
+    groups:
+      terraform-providers:
+        patterns: ["*"]
+
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "monthly"

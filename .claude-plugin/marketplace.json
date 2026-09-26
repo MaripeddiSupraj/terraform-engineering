@@ -1,0 +1,15 @@
+{
+  "name": "terraform-engineering",
+  "description": "Guardrailed Terraform workflows for AI coding agents.",
+  "owner": {
+    "name": "Supraj Maripeddi",
+    "url": "https://github.com/MaripeddiSupraj"
+  },
+  "plugins": [
+    {
+      "name": "terraform-engineering",
+      "source": "./",
+      "description": "Skills + guard hook + OPA plan policies for safe agent-driven Terraform."
+    }
+  ]
+}
