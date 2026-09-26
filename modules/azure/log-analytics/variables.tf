@@ -30,6 +30,12 @@ variable "retention_in_days" {
   }
 }
 
+variable "local_authentication_enabled" {
+  description = "Allow shared-key (local) authentication in addition to Microsoft Entra ID. Keep false unless a legacy agent requires workspace keys."
+  type        = bool
+  default     = false
+}
+
 variable "tags" {
   description = "Tags applied to the workspace."
   type        = map(string)

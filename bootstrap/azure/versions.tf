@@ -10,5 +10,9 @@ terraform {
 }
 
 provider "azurerm" {
+  # Shared keys are disabled on the state account, so every data-plane call
+  # must use Entra ID.
+  storage_use_azuread = true
+
   features {}
 }

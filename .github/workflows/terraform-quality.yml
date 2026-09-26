@@ -2,60 +2,125 @@ name: Terraform Quality
 
 on:
   pull_request:
-    paths:
-      - "**/*.tf"
-      - "**/*.tftest.hcl"
-      - ".github/workflows/terraform-quality.yml"
   push:
     branches: [main]
-    paths:
-      - "**/*.tf"
-      - "**/*.tftest.hcl"
-      - ".github/workflows/terraform-quality.yml"
 
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  TERRAFORM_VERSION: 1.16.3
+  TFLINT_VERSION: v0.64.0
+  CONFTEST_VERSION: 0.70.1
+  CONFTEST_SHA256: 613d124b8f6c1f3cee890491f7ab19114cca5a2102ca47cb2e6c35b4c23f9c8a
+
 jobs:
   terraform:
+    name: fmt / validate / test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v4.0.1
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
         with:
-          terraform_version: 1.16.3
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
           terraform_wrapper: false
 
       - name: Format check
-        run: terraform fmt -check -diff -recursive .
+        run: make fmt-check
 
-      - name: Validate and test
-        run: make validate test
+      - name: Validate
+        run: make validate
+
+      - name: Native tests (mock providers)
+        run: make test
 
   tflint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup TFLint
-        uses: terraform-linters/setup-tflint@v6.2.2
+        uses: terraform-linters/setup-tflint@1cf010d3c7aef302051ccdb68c14c5dc2efa34ef # v6.3.1
         with:
+          tflint_version: ${{ env.TFLINT_VERSION }}
           cache: true
 
-      - name: Initialize TFLint
-        run: tflint --init
+      - name: Lint
+        run: make lint
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
-      - name: Lint Terraform
-        shell: bash
+  policy:
+    name: plan policies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install Conftest (checksum-verified)
         run: |
-          set -euo pipefail
-          while IFS= read -r dir; do
-            echo "==> tflint ${dir}"
-            tflint --chdir="${dir}"
-          done < <(find modules bootstrap blueprints -type f -name '*.tf' -printf '%h\n' | sort -u)
+          curl -sSLo conftest.tar.gz "https://github.com/open-policy-agent/conftest/releases/download/v${CONFTEST_VERSION}/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz"
+          echo "${CONFTEST_SHA256}  conftest.tar.gz" | sha256sum --check
+          tar xzf conftest.tar.gz conftest
+          sudo install conftest /usr/local/bin/conftest
+
+      - name: Policy unit tests and fixtures
+        run: make policy-test
+
+  workflow-smoke:
+    name: end-to-end workflow (no cloud)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+
+      - name: Install Conftest (checksum-verified)
+        run: |
+          curl -sSLo conftest.tar.gz "https://github.com/open-policy-agent/conftest/releases/download/v${CONFTEST_VERSION}/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz"
+          echo "${CONFTEST_SHA256}  conftest.tar.gz" | sha256sum --check
+          tar xzf conftest.tar.gz conftest
+          sudo install conftest /usr/local/bin/conftest
+
+      - name: Plan -> policy -> apply saved plan -> drift
+        run: make smoke
+
+  agent-tooling:
+    name: guard + request contract
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Install request tooling
+        run: pip install -r requirements.txt
+
+      - name: Guard hook tests
+        run: make guard-test
+
+      - name: Request schema and renderer
+        run: make schema
+
+      - name: Agent config files are valid JSON
+        run: |
+          for f in .claude/settings.json .claude-plugin/plugin.json .claude-plugin/marketplace.json hooks/hooks.json .cursor/hooks.json schemas/*.json; do
+            python -m json.tool "$f" >/dev/null && echo "ok $f"
+          done

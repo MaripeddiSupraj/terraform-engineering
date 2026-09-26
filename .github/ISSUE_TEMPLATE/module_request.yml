@@ -1,0 +1,23 @@
+name: Module or capability request
+description: Propose a new provider module, blueprint, policy rule, or skill.
+labels: ["enhancement"]
+body:
+  - type: dropdown
+    id: provider
+    attributes:
+      label: Provider
+      options: [azure, aws, gcp, oci, provider-neutral (policy/skill/guard)]
+    validations:
+      required: true
+  - type: textarea
+    id: capability
+    attributes:
+      label: Capability and use case
+      description: What should agents be able to build, and why can't existing modules compose it?
+    validations:
+      required: true
+  - type: textarea
+    id: defaults
+    attributes:
+      label: Secure defaults
+      description: Networking, identity, encryption, deletion protection expectations.

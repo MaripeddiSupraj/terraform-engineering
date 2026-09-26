@@ -1,0 +1,14 @@
+{
+  "name": "terraform-engineering",
+  "displayName": "Terraform Engineering",
+  "version": "0.2.0",
+  "description": "Guardrails and skills for AI agents that write and operate Terraform: design, validate, plan with a policy gate, approval-gated apply, import and drift. Blocks auto-approve, destroy and state edits.",
+  "author": {
+    "name": "Supraj Maripeddi",
+    "url": "https://github.com/MaripeddiSupraj"
+  },
+  "homepage": "https://github.com/MaripeddiSupraj/terraform-engineering",
+  "repository": "https://github.com/MaripeddiSupraj/terraform-engineering",
+  "license": "MIT",
+  "keywords": ["terraform", "opentofu", "iac", "devops", "platform-engineering", "azure", "aks", "opa", "guardrails"]
+}

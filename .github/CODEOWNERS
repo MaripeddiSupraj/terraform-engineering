@@ -1,0 +1,9 @@
+# Safety-critical paths need owner review.
+*                         @MaripeddiSupraj
+/AGENTS.md                @MaripeddiSupraj
+/policies/                @MaripeddiSupraj
+/scripts/guard-terraform.py @MaripeddiSupraj
+/.claude/                 @MaripeddiSupraj
+/hooks/                   @MaripeddiSupraj
+/.github/                 @MaripeddiSupraj
+**/.terraform-policy-exceptions.yaml @MaripeddiSupraj

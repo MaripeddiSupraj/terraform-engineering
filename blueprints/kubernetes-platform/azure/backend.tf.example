@@ -1,0 +1,16 @@
+# Copy to backend.tf after running bootstrap/azure. Values come from
+# `terraform -chdir=../../../bootstrap/azure output backend_config`.
+#
+# use_azuread_auth is required: the bootstrap disables storage account keys,
+# so key-based backend auth fails. The identity running Terraform needs
+# "Storage Blob Data Contributor" on the account (bootstrap
+# var.state_writer_principals grants it).
+terraform {
+  backend "azurerm" {
+    resource_group_name  = "rg-tfstate-platform-ci"
+    storage_account_name = "<state-storage-account>"
+    container_name       = "tfstate"
+    key                  = "kubernetes-platform/prod.tfstate"
+    use_azuread_auth     = true
+  }
+}
