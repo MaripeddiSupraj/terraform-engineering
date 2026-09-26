@@ -27,6 +27,14 @@ run `apply` without a plan file. The repository guard hook blocks both.
 
 If Terraform reports the plan is stale, stop and re-plan.
 
+## Teardown
+
+`terraform destroy` is blocked for agents. To decommission, create a destroy
+plan with `scripts/capture-plan.sh <dir> -- -destroy`, report it with the
+`plan-terraform` template, and apply that saved plan only after approval.
+Protected resource types fail the policy gate unless the human records them in
+`exceptions.allow_destroy`.
+
 ## After apply
 
 1. Verify outcomes, not just exit codes: `terraform -chdir=<dir> output`, plus

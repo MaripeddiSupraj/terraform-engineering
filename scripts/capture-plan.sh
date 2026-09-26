@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 # Create a saved plan plus review evidence, then run the plan policy gate.
 #
-#   scripts/capture-plan.sh <terraform-root-dir> [evidence-dir]
+#   scripts/capture-plan.sh <terraform-root-dir> [evidence-dir] [-- extra plan args]
+#
+# Examples:
+#   scripts/capture-plan.sh blueprints/kubernetes-platform/azure
+#   scripts/capture-plan.sh infra -- -destroy                 # reviewed teardown plan
+#   scripts/capture-plan.sh infra -- -replace=module.aks.azurerm_kubernetes_cluster.this
 #
 # Writes (outside Git; .evidence/ is ignored):
 #   tfplan               saved plan to apply after approval
@@ -15,15 +20,31 @@ set -euo pipefail
 
 FRAMEWORK_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TARGET_DIR=${1:-.}
-EVIDENCE_DIR=${2:-"${TARGET_DIR}/.evidence/$(date -u +%Y%m%dT%H%M%SZ)"}
+[[ $# -gt 0 ]] && shift
+EVIDENCE_DIR=""
+if [[ $# -gt 0 && "$1" != "--" ]]; then
+  EVIDENCE_DIR="$1"
+  shift
+fi
+[[ "${1:-}" == "--" ]] && shift
+EXTRA_PLAN_ARGS=("$@")
+EVIDENCE_DIR=${EVIDENCE_DIR:-"${TARGET_DIR}/.evidence/$(date -u +%Y%m%dT%H%M%SZ)"}
 mkdir -p "${EVIDENCE_DIR}"
 EVIDENCE_DIR="$(cd "${EVIDENCE_DIR}" && pwd)"
+
+# Self-ignoring evidence: repositories using this framework as a plugin may not
+# ignore .evidence/, and a saved plan can contain secrets. A "*" .gitignore
+# keeps the directory out of `git add -A` wherever it lives.
+printf '*\n' >"${EVIDENCE_DIR}/.gitignore"
+if [[ "$(basename "$(dirname "${EVIDENCE_DIR}")")" == ".evidence" ]]; then
+  printf '*\n' >"$(dirname "${EVIDENCE_DIR}")/.gitignore"
+fi
 
 PLAN_PATH="${EVIDENCE_DIR}/tfplan"
 
 # -detailed-exitcode: 0 = no changes, 2 = changes present, 1 = error.
 set +e
-terraform -chdir="${TARGET_DIR}" plan -input=false -lock-timeout=5m -detailed-exitcode -out="${PLAN_PATH}"
+terraform -chdir="${TARGET_DIR}" plan -input=false -lock-timeout=5m -detailed-exitcode ${EXTRA_PLAN_ARGS[@]+"${EXTRA_PLAN_ARGS[@]}"} -out="${PLAN_PATH}"
 plan_rc=$?
 set -e
 if [[ ${plan_rc} -eq 1 ]]; then

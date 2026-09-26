@@ -23,6 +23,10 @@ Agent-ready framework: guardrails in code, not only in prompts.
   `backend_config` output, tests.
 - Negative (`expect_failures`) tests across modules; blueprint and bootstrap tests run in CI.
 - Adapters: `GEMINI.md`, Cursor rules; CODEOWNERS, issue/PR templates, pre-commit, CoC.
+- `tests/smoke/`: cloud-free end-to-end workflow test (plan, policy, saved-plan apply, drift,
+  stale-plan rejection, destroy plan) run in CI.
+- `capture-plan.sh` passes extra plan arguments after `--` (for example `-- -destroy` for a
+  reviewed teardown) and writes a self-ignoring `.gitignore` into evidence directories.
 
 ### Changed
 - CI actions pinned to commit SHAs; Conftest checksum-verified; TFLint `all` preset + azurerm ruleset;

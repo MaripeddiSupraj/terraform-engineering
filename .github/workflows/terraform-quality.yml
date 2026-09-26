@@ -75,6 +75,29 @@ jobs:
       - name: Policy unit tests and fixtures
         run: make policy-test
 
+  workflow-smoke:
+    name: end-to-end workflow (no cloud)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+
+      - name: Install Conftest (checksum-verified)
+        run: |
+          curl -sSLo conftest.tar.gz "https://github.com/open-policy-agent/conftest/releases/download/v${CONFTEST_VERSION}/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz"
+          echo "${CONFTEST_SHA256}  conftest.tar.gz" | sha256sum --check
+          tar xzf conftest.tar.gz conftest
+          sudo install conftest /usr/local/bin/conftest
+
+      - name: Plan -> policy -> apply saved plan -> drift
+        run: make smoke
+
   agent-tooling:
     name: guard + request contract
     runs-on: ubuntu-latest

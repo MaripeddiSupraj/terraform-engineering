@@ -25,6 +25,10 @@ root of the terraform-engineering repository.
    scripts/capture-plan.sh <dir>
    ```
 
+   Extra plan arguments go after `--`, for example a reviewed teardown
+   (`scripts/capture-plan.sh <dir> -- -destroy`) or a targeted replacement
+   (`-- -replace=<address>`).
+
    This writes `tfplan`, `plan.txt`, `plan.json`, `summary.md` and `policy.txt`
    under `<dir>/.evidence/<timestamp>/` and runs `scripts/policy-check.sh`.
    Without the script, the equivalent is `terraform plan -out=tfplan`,

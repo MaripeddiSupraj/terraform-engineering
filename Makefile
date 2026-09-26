@@ -1,6 +1,6 @@
 SHELL := /usr/bin/env bash
 .SHELLFLAGS := -euo pipefail -c
-.PHONY: help fmt fmt-check validate test lint security policy-test guard-test schema docs quality ci
+.PHONY: help fmt fmt-check validate test lint security policy-test guard-test smoke schema docs quality ci
 
 # Every Terraform root/module directory: anything with a versions.tf.
 TF_DIRS   := $(shell find modules bootstrap blueprints -name versions.tf -exec dirname {} \; | sort)
@@ -50,6 +50,9 @@ policy-test: ## Unit-test the plan policies and run them against fixtures
 guard-test: ## Unit-test the agent command guard
 	python3 -m unittest discover -s tests -v
 
+smoke: ## Cloud-free end-to-end workflow test (plan -> policy -> apply saved plan -> drift)
+	./tests/smoke/run.sh
+
 schema: ## Validate example infrastructure requests and render them to tfvars
 	@for f in examples/requests/*.yaml; do \
 		python3 scripts/request-to-tfvars.py --check "$$f"; \
@@ -66,5 +69,5 @@ docs: ## Regenerate module input/output tables with terraform-docs
 quality: fmt-check validate test ## Terraform core quality gates
 	@echo "Terraform core quality gates passed."
 
-ci: quality lint policy-test guard-test schema ## Everything CI runs except the Trivy/Gitleaks scans
+ci: quality lint policy-test guard-test smoke schema ## Everything CI runs except the Trivy/Gitleaks scans
 	@echo "All local CI gates passed."
